@@ -1,43 +1,25 @@
 #!/usr/bin/env python
-"""Kinematic function skeleton code for Prelab 3.
-Course: EE 106A, Fall 2015
-Written by: Aaron Bestick, 9/10/14
-Used by: EE106A, 9/11/15
+"""
+Kinematic function skeleton code for Lab 3 prelab.
 
-This Python file is a code skeleton for Pre lab 3. You should fill in 
-the body of the eight empty methods below so that they implement the kinematic 
-functions described in the homework assignment.
+Course: EE 106A, Fall 2021
+Originally written by: Aaron Bestick, 9/10/14
+Adapted for Fall 2020 by: Amay Saxena, 9/10/20
+
+This Python file is a code skeleton for Lab 3 prelab. You should fill in 
+the body of the five empty methods below so that they implement the kinematic 
+functions described in the assignment.
 
 When you think you have the methods implemented correctly, you can test your 
 code by running "python kin_func_skeleton.py at the command line.
-
-This code requires the NumPy and SciPy libraries. If you don't already have 
-these installed on your personal computer, you can use the lab machines or 
-the Ubuntu+ROS VM on the course page to complete this portion of the homework.
 """
 
 import numpy as np
-import scipy as sp
-from scipy import linalg
 
 np.set_printoptions(precision=4,suppress=True)
 
-def skew_3d(omega):
-    """
-    Converts a rotation vector in 3D to its corresponding skew-symmetric matrix.
-    
-    Args:
-    omega - (3,) ndarray: the rotation vector
-    
-    Returns:
-    omega_hat - (3,3) ndarray: the corresponding skew symmetric matrix
-    """
-    if not omega.shape == (3,):
-        raise TypeError('omega must be a 3-vector')
-    
-    #YOUR CODE HERE
-
-    return omega_hat
+#-----------------------------2D Examples---------------------------------------
+#--(you don't need to modify anything here but you should take a look at them)--
 
 def rotation_2d(theta):
     """
@@ -50,25 +32,11 @@ def rotation_2d(theta):
     rot - (2,2) ndarray: the resulting rotation matrix
     """
     
-    #YOUR CODE HERE
-
-    return rot
-
-def rotation_3d(omega, theta):
-    """
-    Computes a 3D rotation matrix given a rotation axis and angle of rotation.
-    
-    Args:
-    omega - (3,) ndarray: the axis of rotation
-    theta: the angle of rotation
-    
-    Returns:
-    rot - (3,3) ndarray: the resulting rotation matrix
-    """
-    if not omega.shape == (3,):
-        raise TypeError('omega must be a 3-vector')
-    
-    #YOUR CODE HERE
+    rot = np.zeros((2,2))
+    rot[0,0] = np.cos(theta)
+    rot[1,1] = np.cos(theta)
+    rot[0,1] = -np.sin(theta)
+    rot[1,0] = np.sin(theta)
 
     return rot
 
@@ -85,24 +53,10 @@ def hat_2d(xi):
     if not xi.shape == (3,):
         raise TypeError('omega must be a 3-vector')
 
-    #YOUR CODE HERE
-
-    return xi_hat
-
-def hat_3d(xi):
-    """
-    Converts a 3D twist to its corresponding 4x4 matrix representation
-    
-    Args:
-    xi - (6,) ndarray: the 3D twist
-    
-    Returns:
-    xi_hat - (4,4) ndarray: the corresponding 4x4 matrix
-    """
-    if not xi.shape == (6,):
-        raise TypeError('xi must be a 6-vector')
-
-    #YOUR CODE HERE
+    xi_hat = np.zeros((3,3))
+    xi_hat[0,1] = -xi[2]
+    xi_hat[1,0] =  xi[2]
+    xi_hat[0:2,2] = xi[0:2]
 
     return xi_hat
 
@@ -121,9 +75,69 @@ def homog_2d(xi, theta):
     if not xi.shape == (3,):
         raise TypeError('xi must be a 3-vector')
 
-    #YOUR CODE HERE
+    g = np.zeros((3,3))
+    wtheta = xi[2]*theta
+    R = rotation_2d(wtheta)
+    p = np.dot(np.dot( \
+        [[1 - np.cos(wtheta), np.sin(wtheta)],
+        [-np.sin(wtheta), 1 - np.cos(wtheta)]], \
+        [[0,-1],[1,0]]), \
+        [[xi[0]/xi[2]],[xi[1]/xi[2]]])
+
+    g[0:2,0:2] = R
+    g[0:2,2:3] = p[0:2]
+    g[2,2] = 1
 
     return g
+
+#-----------------------------3D Functions--------------------------------------
+#-------------(These are the functions you need to complete)--------------------
+
+def skew_3d(omega):
+    """
+    Converts a rotation vector in 3D to its corresponding skew-symmetric matrix.
+    
+    Args:
+    omega - (3,) ndarray: the rotation vector
+    
+    Returns:
+    omega_hat - (3,3) ndarray: the corresponding skew symmetric matrix
+    """
+
+    # YOUR CODE HERE
+
+
+
+def rotation_3d(omega, theta):
+    """
+    Computes a 3D rotation matrix given a rotation axis and angle of rotation.
+    
+    Args:
+    omega - (3,) ndarray: the axis of rotation
+    theta: the angle of rotation
+    
+    Returns:
+    rot - (3,3) ndarray: the resulting rotation matrix
+    """
+
+    # YOUR CODE HERE
+
+
+
+def hat_3d(xi):
+    """
+    Converts a 3D twist to its corresponding 4x4 matrix representation
+    
+    Args:
+    xi - (6,) ndarray: the 3D twist
+    
+    Returns:
+    xi_hat - (4,4) ndarray: the corresponding 4x4 matrix
+    """
+
+    # YOUR CODE HERE
+
+
 
 def homog_3d(xi, theta):
     """
@@ -133,16 +147,13 @@ def homog_3d(xi, theta):
     Args:
     xi - (6,) ndarray: the 3D twist
     theta: the joint displacement
-
     Returns:
     g - (4,4) ndarary: the resulting homogeneous transformation matrix
     """
-    if not xi.shape == (6,):
-        raise TypeError('xi must be a 6-vector')
 
-    #YOUR CODE HERE
+    # YOUR CODE HERE
 
-    return g
+
 
 def prod_exp(xi, theta):
     """
@@ -150,21 +161,19 @@ def prod_exp(xi, theta):
     the twists and displacements for each joint.
     
     Args:
-    xi - (6,N) ndarray: the twists for each joint
+    xi - (6, N) ndarray: the twists for each joint
     theta - (N,) ndarray: the displacement of each joint
     
     Returns:
     g - (4,4) ndarray: the resulting homogeneous transformation matrix
     """
-    if not xi.shape[0] == 6:
-        raise TypeError('xi must be a 6xN')
 
-    #YOUR CODE HERE
+    # YOUR CODE HERE
 
-    return g
+    
 
-#-----------------------------Testing code--------------------------------------
-#-------------(you shouldn't need to modify anything below here)----------------
+#---------------------------------TESTING CODE---------------------------------
+#-------------------------DO NOT MODIFY ANYTHING BELOW HERE--------------------
 
 def array_func_test(func_name, args, ret_desired):
     ret_value = func_name(*args)
@@ -188,13 +197,6 @@ if __name__ == "__main__":
                             [-2.,  1.,  0.]])
     array_func_test(skew_3d, func_args, ret_desired)
 
-    #Test rotation_2d()
-    arg1 = 2.658
-    func_args = (arg1,)
-    ret_desired = np.array([[-0.8853, -0.465 ],
-                            [ 0.465 , -0.8853]])
-    array_func_test(rotation_2d, func_args, ret_desired)
-
     #Test rotation_3d()
     arg1 = np.array([2.0, 1, 3])
     arg2 = 0.587
@@ -204,14 +206,6 @@ if __name__ == "__main__":
                             [ 0.4629,  0.7731,  0.4337]])
     array_func_test(rotation_3d, func_args, ret_desired)
 
-    #Test hat_2d()
-    arg1 = np.array([2.0, 1, 3])
-    func_args = (arg1,)
-    ret_desired = np.array([[ 0., -3.,  2.],
-                            [ 3.,  0.,  1.],
-                            [ 0.,  0.,  0.]])
-    array_func_test(hat_2d, func_args, ret_desired)
-
     #Test hat_3d()
     arg1 = np.array([2.0, 1, 3, 5, 4, 2])
     func_args = (arg1,)
@@ -220,15 +214,6 @@ if __name__ == "__main__":
                             [-4.,  5.,  0.,  3.],
                             [ 0.,  0.,  0.,  0.]])
     array_func_test(hat_3d, func_args, ret_desired)
-
-    #Test homog_2d()
-    arg1 = np.array([2.0, 1, 3])
-    arg2 = 0.658
-    func_args = (arg1,arg2)
-    ret_desired = np.array([[-0.3924, -0.9198,  0.1491],
-                            [ 0.9198, -0.3924,  1.2348],
-                            [ 0.    ,  0.    ,  1.    ]])
-    array_func_test(homog_2d, func_args, ret_desired)
 
     #Test homog_3d()
     arg1 = np.array([2.0, 1, 3, 5, 4, 2])
